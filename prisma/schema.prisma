@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Transmission {
+  automatic
+  manual
+}
+
+enum FuelType {
+  petrol
+  diesel
+  hybrid
+  electric
+}
+
+model Category {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  name      String   @unique
+  slug      String   @unique
+  icon      String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  cars Car[]
+
+  @@map("categories")
+}
+
+model Car {
+  id             String       @id @default(uuid(7)) @db.Uuid
+  brand          String
+  pricePerDay    Decimal      @map("price_per_day") @db.Decimal(10, 2)
+  transmission   Transmission
+  fuel           FuelType
+  airConditioner Boolean      @default(true) @map("air_conditioner")
+  doors          Int
+  seats          Int
+  mileageLimitKm Int          @map("mileage_limit_km")
+  equipment      String[]
+  image          String
+  gallery        String[]
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  categoryId     String       @map("category_id") @db.Uuid
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@index([categoryId])
+  @@map("cars")
+}
