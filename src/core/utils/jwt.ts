@@ -1,12 +1,12 @@
 import jwt, { type SignOptions } from "jsonwebtoken";
-import { JWT_EXPIRES_IN, JWT_SECRET } from "../config/jwt.js";
+import { ACCESS_TOKEN_EXPIRES_IN, JWT_SECRET } from "../config/jwt.js";
 import { isActor, type Actor } from "../constants/actor.js";
 
 export type TokenPayload = { sub: string; actor: Actor };
 
 export function signToken(payload: TokenPayload) {
   return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: JWT_EXPIRES_IN as SignOptions["expiresIn"],
+    expiresIn: ACCESS_TOKEN_EXPIRES_IN as SignOptions["expiresIn"],
   });
 }
 

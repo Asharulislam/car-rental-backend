@@ -20,15 +20,30 @@ enum FuelType {
 }
 
 model User {
-  id           String   @id @default(uuid(7)) @db.Uuid
-  name         String
-  email        String   @unique
-  phone        String?
-  passwordHash String?  @map("password_hash")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id            String         @id @default(uuid(7)) @db.Uuid
+  name          String
+  email         String         @unique
+  phone         String?
+  passwordHash  String?        @map("password_hash")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  refreshTokens RefreshToken[]
 
   @@map("users")
+}
+
+// One row per issued refresh token. userId is null for the admin, who has no users row.
+model RefreshToken {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  tokenHash String    @unique @map("token_hash")
+  userId    String?   @map("user_id") @db.Uuid
+  user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime  @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("refresh_tokens")
 }
 
 model Category {
@@ -38,7 +53,7 @@ model Category {
   icon      String?
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  cars Car[]
+  cars      Car[]
 
   @@map("categories")
 }
@@ -59,7 +74,7 @@ model Car {
   createdAt      DateTime     @default(now()) @map("created_at")
   updatedAt      DateTime     @updatedAt @map("updated_at")
   categoryId     String       @map("category_id") @db.Uuid
-  category Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  category       Category     @relation(fields: [categoryId], references: [id], onDelete: Restrict)
 
   @@index([categoryId])
   @@map("cars")
