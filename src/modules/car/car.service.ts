@@ -1,21 +1,37 @@
 import prisma from "../../core/config/prisma.js";
 import type { Prisma } from "../../generated/prisma/client.js";
+import type { ListCarsInput } from "./car.validation.js";
 
 const carInclude = {
   category: { select: { id: true, name: true, slug: true } },
 } as const;
 
-// Decimal in the database, plain number in the API (for display only)
 function toCarResponse<T extends { pricePerDay: Prisma.Decimal }>(car: T) {
   return { ...car, pricePerDay: car.pricePerDay.toNumber() };
 }
 
-export async function getCars() {
-  const cars = await prisma.car.findMany({
-    orderBy: { createdAt: "desc" },
-    include: carInclude,
-  });
-  return cars.map(toCarResponse);
+export async function getCars(input: ListCarsInput) {
+  const { page, limit } = input;
+
+  const [cars, total] = await prisma.$transaction([
+    prisma.car.findMany({
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      include: carInclude,
+      skip: (page - 1) * limit,
+      take: limit,
+    }),
+    prisma.car.count(),
+  ]);
+
+  return {
+    items: cars.map(toCarResponse),
+    meta: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
 }
 
 export async function getCarById(id: string) {
