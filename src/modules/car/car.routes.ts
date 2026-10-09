@@ -1,8 +1,9 @@
 import { Router } from "express";
-import { carslist } from "./car.controller.js";
+import { getCarDetails, getCarslist } from "./car.controller.js";
 
 const router = Router();
 
-router.get("/", carslist);
+router.get("/", getCarslist);
+router.get("/:id", getCarDetails);
 
 export default router;
