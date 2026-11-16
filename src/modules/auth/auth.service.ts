@@ -5,7 +5,11 @@ import { ADMIN_EMAIL, ADMIN_PASSWORD } from "../../core/config/admin.js";
 import { REFRESH_TOKEN_TTL_DAYS } from "../../core/config/jwt.js";
 import { signToken } from "../../core/utils/jwt.js";
 import { Actor } from "../../core/constants/actor.js";
-import type { LoginInput, RefreshInput, SignupInput } from "./auth.validation.js";
+import type {
+  LoginInput,
+  RefreshInput,
+  SignupInput,
+} from "./auth.validation.js";
 
 // Compared against when the email is unknown, so a miss takes as long as a hit.
 const DUMMY_HASH = bcrypt.hashSync("timing-equaliser", 12);
@@ -35,7 +39,9 @@ async function issueTokens(userId: string | null, actor: Actor) {
   const accessToken = signToken({ sub: userId ?? "admin", actor });
 
   const refreshToken = randomBytes(32).toString("base64url");
-  const expiresAt = new Date(Date.now() + REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000);
+  const expiresAt = new Date(
+    Date.now() + REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000,
+  );
   await prisma.refreshToken.create({
     data: { tokenHash: hashToken(refreshToken), userId, expiresAt },
   });
@@ -67,7 +73,8 @@ export async function signupCustomer(input: SignupInput) {
 }
 
 export async function loginCustomer(input: LoginInput) {
-  const user = await prisma.user.findUnique({ where: { email: input.email } });
+  const email = input.email.trim().toLowerCase();
+  const user = await prisma.user.findUnique({ where: { email: email } });
 
   const ok = await bcrypt.compare(
     input.password,

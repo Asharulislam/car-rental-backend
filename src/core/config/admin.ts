@@ -1,3 +1,5 @@
+// import "dotenv/config";
+
 const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
 const password = process.env.ADMIN_PASSWORD;
 
